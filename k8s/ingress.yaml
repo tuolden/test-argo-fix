@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "test-argo-fix"
+  namespace: "test-argo-fix"
+  labels:
+    app: "test_argo_fix"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - "test-argo-fix.local"
+    secretName: "test-argo-fix-tls"
+  rules:
+  - host: "test-argo-fix.local"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: "test-argo-fix"
+            port:
+              number: 80

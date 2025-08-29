@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: "test-argo-fix"
+
+resources:
+- namespace.yaml
+- configmap.yaml
+- secret.yaml
+- deployment.yaml
+- service.yaml
+- ingress.yaml
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/name: "test-argo-fix"
+    app.kubernetes.io/component: "api"
+    app.kubernetes.io/part-of: "test-argo-fix"
+    app.kubernetes.io/managed-by: "kustomize"
+
+images:
+- name: "ghcr.io/tuolden/test-argo-fix"
+  newTag: "latest"

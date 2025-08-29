@@ -1,0 +1,70 @@
+{
+  "template_version": "1.0.0",
+  "generation_timestamp": 1756478891.33521,
+  "generation_steps": [
+    {
+      "timestamp": 1756478891.3118,
+      "action": "Starting project generation",
+      "details": {
+        "project_spec": "tuolden/test-argo-fix"
+      }
+    },
+    {
+      "timestamp": 1756478891.311879,
+      "action": "Parsed project specification",
+      "details": {
+        "owner": "tuolden",
+        "project_name": "test-argo-fix"
+      }
+    },
+    {
+      "timestamp": 1756478891.311931,
+      "action": "Determined output directory",
+      "details": {
+        "output_dir": "/Users/glopezorozco/personal/template/test-argo-fix"
+      }
+    },
+    {
+      "timestamp": 1756478891.3119528,
+      "action": "Collecting user inputs",
+      "details": {}
+    },
+    {
+      "timestamp": 1756478891.311994,
+      "action": "User inputs collected",
+      "details": {
+        "placeholders": [
+          "{{PROJECT_NAME}}",
+          "{{PROJECT_NAME_WITH_HYPHENS}}",
+          "{{PROJECT_NAME_ALNUM}}",
+          "{{GITHUB_OWNER}}",
+          "{{PROJECT_DESCRIPTION}}",
+          "{{AUTHOR_NAME}}",
+          "{{AUTHOR_EMAIL}}"
+        ]
+      }
+    },
+    {
+      "timestamp": 1756478891.312011,
+      "action": "Starting file processing",
+      "details": {}
+    },
+    {
+      "timestamp": 1756478891.3309371,
+      "action": "File processing completed",
+      "details": {
+        "files_processed": 57
+      }
+    },
+    {
+      "timestamp": 1756478891.334965,
+      "action": "Creating additional files",
+      "details": {}
+    }
+  ],
+  "summary": {
+    "total_steps": 8,
+    "template_source": "/Users/glopezorozco/personal/template/python_template",
+    "output_directory": "/Users/glopezorozco/personal/template/test-argo-fix"
+  }
+}

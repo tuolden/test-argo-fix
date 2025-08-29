@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test_argo_fix-production
+  namespace: argocd
+  labels:
+    app: test_argo_fix
+    env: production
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/tuolden/test_argo_fix
+    targetRevision: main
+    path: k8s/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: test_argo_fix
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false  # Manual sync for production
+      allowEmpty: false
+    syncOptions:
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  revisionHistoryLimit: 10

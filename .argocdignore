@@ -1,0 +1,26 @@
+# Ignore local virtual environments and miscellaneous files so Argo CD does not
+# encounter out-of-bounds symlinks or scan non-manifest content.
+
+# Python virtualenvs
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local environment files
+.env
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Test output
+.pytest_cache/
+.coverage
+htmlcov/
+

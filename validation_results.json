@@ -1,0 +1,120 @@
+{
+  "checks": {
+    "file_structure": {
+      "success": true,
+      "message": "Structure check: 0 missing dirs, 0 missing files",
+      "details": {
+        "missing_directories": [],
+        "missing_files": []
+      },
+      "timestamp": 1756478891.3969731
+    },
+    "placeholder_replacement": {
+      "success": true,
+      "message": "Found 0 unreplaced placeholders",
+      "details": {
+        "placeholders_found": []
+      },
+      "timestamp": 1756478891.401462
+    },
+    "python_syntax": {
+      "success": true,
+      "message": "Checked 26 Python files, 0 errors",
+      "details": {
+        "files_checked": 26,
+        "syntax_errors": []
+      },
+      "timestamp": 1756478892.192148
+    },
+    "python_imports": {
+      "success": true,
+      "message": "Main module import successful",
+      "details": {
+        "project_name": "test_argo_fix",
+        "stdout": "\u2705 Main module imported successfully\n",
+        "stderr": ""
+      },
+      "timestamp": 1756478892.407008
+    },
+    "local_startup": {
+      "success": true,
+      "message": "Application startup successful",
+      "details": {
+        "project_name": "test_argo_fix",
+        "stdout": "\u2705 Application startup test successful\n",
+        "stderr": ""
+      },
+      "timestamp": 1756478892.6123168
+    },
+    "docker_build": {
+      "success": true,
+      "message": "Docker build successful",
+      "details": {
+        "image_name": "test-test_argo_fix",
+        "stdout": null,
+        "stderr": "de pip\n#17 DONE 5.9s\n\n#18 [builder 7/7] COPY . .\n#18 DONE 0.0s\n\n#19 [runtime 5/6] COPY --from=builder /install /usr/local\n#19 DONE 0.1s\n\n#20 [runtime 6/6] COPY --chown=appuser:appuser . /app\n#20 DONE 0.0s\n\n#21 exporting to image\n#21 exporting layers\n#21 exporting layers 1.6s done\n#21 exporting manifest sha256:56f8238511d5f436beda77c74732ab8d23c57d33e0441e74207b733f456b2166\n#21 exporting manifest sha256:56f8238511d5f436beda77c74732ab8d23c57d33e0441e74207b733f456b2166 done\n#21 exporting config sha256:8580ba6800a9c21d056e1567ecbb29ed17846839b932ac1a08fbe06b1f2bea84 done\n#21 exporting attestation manifest sha256:9e240f00790b240ef839fe903c3b4c5c7ba02036ca30f68502c189d1acc721a8 done\n#21 exporting manifest list sha256:ed7954f7fcf746a681aef662cebeddcbd90c568b13e31495d0922dce169957fe done\n#21 naming to docker.io/library/test-test_argo_fix:latest done\n#21 unpacking to docker.io/library/test-test_argo_fix:latest\n#21 unpacking to docker.io/library/test-test_argo_fix:latest 0.3s done\n#21 DONE 1.9s\n"
+      },
+      "timestamp": 1756478904.171159
+    },
+    "tests": {
+      "success": false,
+      "message": "Tests failed: 4 exit code",
+      "details": {
+        "stdout": null,
+        "stderr": "/Users/glopezorozco/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020\n  warnings.warn(\n/Users/glopezorozco/Library/Python/3.9/lib/python/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.\nPlugin: helpconfig, Hook: pytest_cmdline_parse\nConftestImportFailure: ModuleNotFoundError: No module named 'app_runner.main'; 'app_runner' is not a package (from /Users/glopezorozco/personal/template/test-argo-fix/tests/conftest.py)\nFor more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning\n  config = pluginmanager.hook.pytest_cmdline_parse(\nImportError while loading conftest '/Users/glopezorozco/personal/template/test-argo-fix/tests/conftest.py'.\ntests/conftest.py:31: in <module>\n    _app_module = importlib.import_module(f\"{_PROJECT}.main\")\nE   ModuleNotFoundError: No module named 'app_runner.main'; 'app_runner' is not a package\n"
+      },
+      "timestamp": 1756478906.1385128
+    },
+    "code_quality": {
+      "success": false,
+      "message": "Some quality checks failed",
+      "details": {
+        "black": {
+          "passed": false,
+          "stdout": "",
+          "stderr": "would reformat /Users/glopezorozco/personal/template/test-argo-fix/src/app_runner.py\n\nOh no! \ud83d\udca5 \ud83d\udc94 \ud83d\udca5\n1 file would be reformatted, 22 files would be left unchanged.\n"
+        },
+        "ruff": {
+          "passed": true,
+          "stdout": "All checks passed!\n",
+          "stderr": ""
+        }
+      },
+      "timestamp": 1756478906.464968
+    }
+  },
+  "summary": {
+    "total_checks": 8,
+    "passed_checks": 6,
+    "failed_checks": 2,
+    "success_rate": 75.0,
+    "duration_seconds": 15.077895879745483,
+    "overall_success": false
+  },
+  "errors": [
+    {
+      "check": "tests",
+      "message": "Tests failed: 4 exit code",
+      "details": {
+        "stdout": null,
+        "stderr": "/Users/glopezorozco/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020\n  warnings.warn(\n/Users/glopezorozco/Library/Python/3.9/lib/python/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.\nPlugin: helpconfig, Hook: pytest_cmdline_parse\nConftestImportFailure: ModuleNotFoundError: No module named 'app_runner.main'; 'app_runner' is not a package (from /Users/glopezorozco/personal/template/test-argo-fix/tests/conftest.py)\nFor more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning\n  config = pluginmanager.hook.pytest_cmdline_parse(\nImportError while loading conftest '/Users/glopezorozco/personal/template/test-argo-fix/tests/conftest.py'.\ntests/conftest.py:31: in <module>\n    _app_module = importlib.import_module(f\"{_PROJECT}.main\")\nE   ModuleNotFoundError: No module named 'app_runner.main'; 'app_runner' is not a package\n"
+      }
+    },
+    {
+      "check": "code_quality",
+      "message": "Some quality checks failed",
+      "details": {
+        "black": {
+          "passed": false,
+          "stdout": "",
+          "stderr": "would reformat /Users/glopezorozco/personal/template/test-argo-fix/src/app_runner.py\n\nOh no! \ud83d\udca5 \ud83d\udc94 \ud83d\udca5\n1 file would be reformatted, 22 files would be left unchanged.\n"
+        },
+        "ruff": {
+          "passed": true,
+          "stdout": "All checks passed!\n",
+          "stderr": ""
+        }
+      }
+    }
+  ]
+}

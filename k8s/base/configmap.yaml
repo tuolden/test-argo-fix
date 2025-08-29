@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "test-argo-fix-config"
+  namespace: "test-argo-fix"
+  labels:
+    app: "test_argo_fix"
+data:
+  PROJECT_NAME: "test_argo_fix"
+  LOG_LEVEL: "INFO"
+  HOST: "127.0.0.1"
+  PORT: "8080"
+  API_V1_STR: "/api/v1"
+  DATABASE_POOL_SIZE: "5"
+  DATABASE_MAX_OVERFLOW: "10"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  ALLOWED_HOSTS: '["*"]'

@@ -1,0 +1,60 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../base
+
+# No environment prefix; single environment is production by default
+# namePrefix removed for simplicity
+
+patches:
+- target:
+    kind: Deployment
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: "test-argo-fix"
+      namespace: "test-argo-fix"
+    spec:
+      replicas: 3
+      template:
+        spec:
+          containers:
+          - name: "testargofix"
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "500m"
+              limits:
+                memory: "1Gi"
+                cpu: "1000m"
+- target:
+    kind: Ingress
+  patch: |-
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: "test-argo-fix"
+      namespace: "test-argo-fix"
+    spec:
+      tls:
+      - hosts:
+        - "test-argo-fix.example.com"
+        secretName: "test-argo-fix-tls"
+      rules:
+      - host: "test-argo-fix.example.com"
+        http:
+          paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: "test-argo-fix"
+                port:
+                  number: 80
+
+
+images:
+- name: ghcr.io/tuolden/test-argo-fix
+  newTag: main

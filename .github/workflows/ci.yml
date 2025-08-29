@@ -1,0 +1,204 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/test-argo-fix
+
+jobs:
+  test:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Setup and install
+        run: |
+          which python && python --version
+          rm -rf .venv
+          make venv
+          make install
+
+      - name: Run CI checks
+        run: |
+          make ci
+
+      - name: Coverage
+        run: |
+          make cov
+
+
+  security:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Setup and install
+        run: |
+          which python && python --version
+          rm -rf .venv
+          make venv
+          make install
+
+      - name: Security scan
+        run: |
+          make sec
+
+  build:
+    runs-on: self-hosted
+    needs: [test, security]
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Load env (prefer Redis) and derive image coordinates
+        id: envprep
+        run: |
+          set -euo pipefail
+          # Prefer Redis for config if available
+          if command -v python3 >/dev/null 2>&1; then
+            REGISTRY_URL_FROM_REDIS=$(python3 scripts/redis_env.py --key REGISTRY_URL 2>/dev/null || true)
+          fi
+          if [ -z "${REGISTRY_URL_FROM_REDIS:-}" ]; then
+            if [ -f .env ]; then
+              set -a; source .env; set +a
+            fi
+            : "${REGISTRY_URL:=192.168.0.162:32003}"
+          else
+            REGISTRY_URL="$REGISTRY_URL_FROM_REDIS"
+          fi
+          IMAGE_NAME=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          echo "REGISTRY_URL=$REGISTRY_URL" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          echo "Using registry: $REGISTRY_URL"
+          echo "Image name: $IMAGE_NAME"
+
+
+      - name: Build and tag image (SHA and latest)
+        run: |
+          set -euo pipefail
+          IMAGE="$REGISTRY_URL/$IMAGE_NAME"
+          TAG_SHA="${GITHUB_SHA}"
+          docker build -t "$IMAGE:$TAG_SHA" .
+          docker tag "$IMAGE:$TAG_SHA" "$IMAGE:latest"
+
+      - name: Push to local registry
+        run: |
+          set -euo pipefail
+          IMAGE="$REGISTRY_URL/$IMAGE_NAME"
+          docker push "$IMAGE:${GITHUB_SHA}"
+          docker push "$IMAGE:latest"
+
+
+      - name: Cleanup old images (keep last 3 excluding latest)
+        continue-on-error: true
+        env:
+          REGISTRY_URL: ${{ env.REGISTRY_URL }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+        run: |
+          set -euo pipefail
+          REPO="$IMAGE_NAME"
+          BASE="$REGISTRY_URL"
+          case "$BASE" in
+            http://*|https://*) ;;
+            *) BASE="http://$BASE" ;;
+          esac
+          echo "Querying tags for $BASE/v2/$REPO"
+          if ! command -v jq >/dev/null 2>&1; then
+            echo "jq not found; installing minimal jq alternative is out of scope. Skipping cleanup."; exit 0; fi
+          TAGS=$(curl -fsSL "$BASE/v2/$REPO/tags/list" | jq -r '.tags // [] | map(select(. != "latest")) | .[]' || true)
+          if [ -z "$TAGS" ]; then
+            echo "No tags to consider for cleanup"; exit 0; fi
+          TMP=$(mktemp)
+          for t in $TAGS; do
+            manifest_json=$(curl -fsSL -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' "$BASE/v2/$REPO/manifests/$t" || true)
+            if [ -z "$manifest_json" ]; then continue; fi
+            config_digest=$(jq -r '.config.digest' <<<"$manifest_json" 2>/dev/null || echo "")
+            created=""
+            if [ -n "$config_digest" ]; then
+              created=$(curl -fsSL "$BASE/v2/$REPO/blobs/$config_digest" | jq -r '.created // empty' || true)
+            fi
+            digest=$(curl -sI -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' "$BASE/v2/$REPO/manifests/$t" | tr -d '\r' | awk -F': ' '/Docker-Content-Digest:/ {print $2}')
+            printf '%s\t%s\t%s\n' "$created" "$t" "$digest" >> "$TMP"
+          done
+          echo "Collected tag metadata:"; cat "$TMP" || true
+          SORTED=$(awk 'BEGIN{FS="\t"} {print $0} ' "$TMP" | sort -r | awk 'NF')
+          KEPT=0
+          echo "$SORTED" | while IFS=$'\t' read -r created tag digest; do
+            if [ -z "$tag" ] || [ -z "$digest" ]; then continue; fi
+            KEPT=$((KEPT+1))
+            if [ $KEPT -le 3 ]; then
+              echo "Keeping tag $tag ($created)";
+            else
+              echo "Deleting old tag $tag (digest $digest)";
+              code=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE "$BASE/v2/$REPO/manifests/$digest" || true)
+              echo "DELETE returned HTTP $code"
+            fi
+          done
+          rm -f "$TMP" || true
+
+
+
+  deploy-production:
+    runs-on: self-hosted
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Update production manifests
+        run: |
+          # Load registry vars (prefer Redis)
+          set -euo pipefail
+          REGISTRY_URL_FROM_REDIS=$(python3 scripts/redis_env.py --key REGISTRY_URL 2>/dev/null || true)
+          if [ -z "${REGISTRY_URL_FROM_REDIS:-}" ]; then
+            if [ -f .env ]; then set -a; source .env; set +a; fi
+            : "${REGISTRY_URL:=192.168.0.162:32003}"
+          else
+            REGISTRY_URL="$REGISTRY_URL_FROM_REDIS"
+          fi
+          IMAGE_NAME=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+
+          # Update image tag in Kubernetes manifests
+          sed -i "s|image: .*|image: $REGISTRY_URL/$IMAGE_NAME:${GITHUB_SHA}|g" k8s/production/deployment-patch.yaml
+
+          # Commit and push changes using the workflow token identity
+          git config --local user.name "${{ github.actor }}"
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git add k8s/production/
+          git commit -m "Update production deployment image to ${GITHUB_SHA}" || exit 0
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

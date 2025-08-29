@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "test_argo_fix"
+  namespace: "test_argo_fix"
+spec:
+  tls:
+  - hosts:
+    - "test_argo_fix.example.com"
+    secretName: "prod-test_argo_fix-tls"
+  rules:
+  - host: "test_argo_fix.example.com"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: "prod-test_argo_fix"
+            port:
+              number: 80
