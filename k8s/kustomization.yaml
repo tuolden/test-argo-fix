@@ -24,6 +24,12 @@ images:
   newTag: "latest"
 
 # Production overrides
-patchesStrategicMerge:
-- deployment-patch.yaml
-- ingress-patch.yaml
+patches:
+- path: deployment-patch.yaml
+  target:
+    kind: Deployment
+    name: "test-argo-fix"
+- path: ingress-patch.yaml
+  target:
+    kind: Ingress
+    name: "test-argo-fix"
